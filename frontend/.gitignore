@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+
+# pnpm
+.pnpm-store
+
+# build
+dist
+build
+
+# vite
+.vite
+
+# typescript
+*.tsbuildinfo
+
+# logs
+*.log
+
+# env
+.env
+.env.local
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
