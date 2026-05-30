@@ -19,7 +19,12 @@
   },
   "type": "module",
   "devDependencies": {
+    "@bufbuild/protoc-gen-es": "^2.12.0",
+    "@protobuf-ts/plugin": "^2.11.1",
+    "ts-proto": "^2.11.8"
   },
   "dependencies": {
+    "@bufbuild/protobuf": "^2.12.0",
+    "@protobuf-ts/runtime": "^2.11.1"
   }
 }

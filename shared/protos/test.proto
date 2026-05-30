@@ -1,0 +1,11 @@
+
+syntax = "proto3";
+
+package realmix.hello;
+
+message HelloResponse {
+  string text = 1;
+}
+
+message HelloRequest {
+}

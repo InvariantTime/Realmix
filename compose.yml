@@ -1,0 +1,8 @@
+
+services:
+    backend:
+        build:
+            dockerfile: Dockerfile
+            context: ./backend/Services/Realmix.Core/
+        ports:
+            - 5000:8080

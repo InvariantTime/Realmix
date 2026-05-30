@@ -2,8 +2,4 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
-  core-js: true
-  core-js-pure: true
-overrides:
-  eslint: ^8.57.0
-  eslint-webpack-plugin: ^3.2.0
+  protobuf: true
