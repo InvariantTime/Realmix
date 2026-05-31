@@ -1,0 +1,17 @@
+{
+  "name": "@realmix/engine",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@babylonjs/core": "^9.10.1"
+  }
+}

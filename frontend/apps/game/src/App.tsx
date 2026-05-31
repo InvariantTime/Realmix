@@ -1,15 +1,19 @@
-import { sayHello } from "@realmix/protocol"
+import { useCallback } from "react";
+import { GameCanvas } from "./components/GameCanvas";
 
 function App() {
 
-  const onClick = () => {
-    sayHello();
-  }
+  const onCanvasInit = useCallback((canvas: HTMLCanvasElement) => {
+
+    alert("canvas inited");
+
+  }, []);
+
 
   return (
-    <>
-      <button onClick={onClick}>say hello</button>
-    </>
+    <div className="h-screen w-screen flex">
+      <GameCanvas onCanvasInit={onCanvasInit}/>
+    </div>
   )
 }
 
