@@ -1,4 +1,6 @@
 import { ArcRotateCamera, Color3, Engine, HemisphericLight, Material, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
+import { GameCube } from "./GameCube";
+import { updateWorld } from "./Updates";
 
 export interface IVisualProvider {
     readonly canvas: HTMLCanvasElement
@@ -8,6 +10,7 @@ export class EngineApplication {
     private engine?: Engine;
     private scene?: Scene;
     private keys: Set<string> = new Set<string>();
+    private cube: GameCube = new GameCube();
     
     public constructor(private readonly canvas: HTMLCanvasElement) {
     }
@@ -60,7 +63,7 @@ export class EngineApplication {
         arrowMaterial.emissiveColor = new Color3(0.2, 1, 0.2);
         arrow.material = arrowMaterial;
 
-        b.position.y = 0.5;
+        this.cube.position.y = 0.5;
 
 
         const light = new HemisphericLight(
@@ -73,34 +76,15 @@ export class EngineApplication {
 
         this.engine.runRenderLoop(() => {
 
-            const speed = 0.06;
-            const rotationSpeed = 0.04;
+            const context = {
+                inputs: this.keys,
+                cube: this.cube
+            };
 
-            if (this.keys.has("KeyW") === true) {
-                const direction = b.getDirection(Vector3.Forward());
-                b.position.addInPlace(direction.scale(speed));
-            }
-            else if (this.keys.has("KeyS") === true) {
-                const direction = b.getDirection(Vector3.Forward());
-                b.position.addInPlace(direction.scale(-speed));
-            }
+            updateWorld(context);
 
-            if (this.keys.has("KeyA") === true) {
-                const left = b.getDirection(Vector3.Left());
-                b.position.addInPlace(left.scale(speed));
-            }
-            else if (this.keys.has("KeyD") === true) {
-                const left = b.getDirection(Vector3.Left());
-                b.position.addInPlace(left.scale(-speed));
-            }
-
-            if (this.keys.has("KeyQ") == true) {
-                b.rotation.y -= rotationSpeed;
-            }
-
-            if (this.keys.has("KeyE") == true) {
-                b.rotation.y += rotationSpeed;
-            }
+            b.position = this.cube.position;
+            b.rotation.y = this.cube.rotation;
 
             scene.render();
         });
