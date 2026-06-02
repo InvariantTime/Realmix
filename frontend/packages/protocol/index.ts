@@ -1,22 +1,20 @@
-import { HelloRequest, HelloResponse } from "./gen/test"
+import {CommandType, ClientCommand, CubeData } from "./gen/game"
 
-export async function sayHello() {
-    const data = HelloRequest.encode({}).finish();
+export async function sendCommand(ws: WebSocket, command: CommandType) {
+    
+    const data = ClientCommand.encode({commandType: command}).finish();
+    await ws.send(data);
+}
 
-    const request = {
-        method: "POST",
-        body: data,
-        headers: {
-            "Content-Type": "application/protobuf"
-        }
-    };
+export function reciveData(e: MessageEvent) {
+    const response = CubeData.decode(new Uint8Array(e.data));
+    return response;
+}
 
-    const result = await fetch("http://localhost:5000/hello", request);
+export function createWebSocket() {
 
-    if (result.ok) {
-        const buff = await result.arrayBuffer();
-        const response = HelloResponse.decode(new Uint8Array(buff));
+    const ws = new WebSocket("ws://localhost:5000/ws");
+    ws.binaryType = "arraybuffer";
 
-        alert(response.text);
-    }
+    return ws;
 }

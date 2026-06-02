@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option csharp_namespace = "Realmix.Protos";
+
+package game;
+
+message ClientCommand {
+    CommandType commandType = 1;
+}
+
+message CubeData {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float rotation = 4;
+}
+
+enum CommandType {
+    None = 0;
+    Left = 1;
+    Right = 2;
+    Forward = 3;
+    Backward = 4;
+    RotateLeft = 5;
+    RotateRight = 6;
+}

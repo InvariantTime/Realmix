@@ -1,39 +1,40 @@
 import { Vector3 } from "@babylonjs/core";
 import { GameCube, moveSpeed, rotationSpeed } from "./GameCube"
+import { CommandType } from "@realmix/protocol/gen/game";
+import { sendCommand } from "@realmix/protocol";
 
-export const updateWorld = ({ inputs, cube }: IUpdateContext) => {
+export const updateWorld = ({ inputs, cube, ws }: IUpdateContext) => {
 
+    var commands: CommandType[] = [];
 
     if (inputs.has("KeyW") === true) {
-        const direction = cube.getDirection(Vector3.Forward());
-        cube.position.addInPlace(direction.scale(moveSpeed));
+        commands = [...commands, CommandType.Forward];
     }
     else if (inputs.has("KeyS") === true) {
-        const direction = cube.getDirection(Vector3.Forward());
-        cube.position.addInPlace(direction.scale(-moveSpeed));
+        commands = [...commands, CommandType.Backward];
     }
 
     if (inputs.has("KeyA") === true) {
-        const left = cube.getDirection(Vector3.Left());
-        cube.position.addInPlace(left.scale(moveSpeed));
+       commands = [...commands, CommandType.Left];
     }
     else if (inputs.has("KeyD") === true) {
-        const left = cube.getDirection(Vector3.Left());
-        cube.position.addInPlace(left.scale(-moveSpeed));
+        commands = [...commands, CommandType.Right];
     }
 
     if (inputs.has("KeyQ") == true) {
-        cube.rotation -= rotationSpeed;
+        commands = [...commands, CommandType.RotateLeft];
     }
 
     if (inputs.has("KeyE") == true) {
-        cube.rotation += rotationSpeed;
+        commands = [...commands, CommandType.RotateRight];
     }
 
+    commands.forEach(c => sendCommand(ws, c));
 }
 
 
 interface IUpdateContext {
     inputs: Set<string>,
-    cube: GameCube
+    cube: GameCube,
+    ws: WebSocket
 }

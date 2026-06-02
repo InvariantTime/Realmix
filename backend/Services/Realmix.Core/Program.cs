@@ -1,40 +1,43 @@
-using Google.Protobuf;
-using Realmix.Hello;
+using Realmix.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(op =>
 {
-    op.AddPolicy("frontend", builder =>
+    op.AddPolicy("frontend", policyBuilder =>
     {
-        builder.WithOrigins("http://localhost:3000")
+        policyBuilder.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
     });
 });
 
+builder.Services.AddHostedService<Game>();
+builder.Services.AddSingleton<ClientBridge>();
 
 var app = builder.Build();
 
 app.UseCors("frontend");
 
-app.MapPost("/hello", async (HttpContext context, ILogger<WebApplication> logger) =>
+app.UseWebSockets();
+
+app.Map("/ws", async (
+    HttpContext context,
+    ClientBridge bridge,
+    CancellationToken ct) =>
 {
-    using var ms = new MemoryStream();
-    await context.Request.Body.CopyToAsync(ms);
-
-    var _ = HelloRequest.Parser.ParseFrom(ms.ToArray());
-    logger.LogInformation("Hello World");
-
-    var response = new HelloResponse()
+    if (context.WebSockets.IsWebSocketRequest == false)
     {
-        Text = "Ну привет"
-    };
+        context.Response.StatusCode = 400;
+        return;
+    }
 
-    var bytes = response.ToByteArray();
+    var socket = await context.WebSockets.AcceptWebSocketAsync();
+    var connection = bridge.CreateConnection(socket);
     
-    return Results.File(bytes, "application/x-protobuf");
+    await connection.RunAsync(ct);
+    connection.Dispose();
 });
 
 app.Run();

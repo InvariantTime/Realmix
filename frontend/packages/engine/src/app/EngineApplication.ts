@@ -1,6 +1,7 @@
 import { ArcRotateCamera, Color3, Engine, HemisphericLight, Material, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
 import { GameCube } from "./GameCube";
 import { updateWorld } from "./Updates";
+import { createWebSocket, reciveData } from "@realmix/protocol";
 
 export interface IVisualProvider {
     readonly canvas: HTMLCanvasElement
@@ -74,11 +75,20 @@ export class EngineApplication {
 
         light.intensity = 0.4;
 
+        var ws = createWebSocket();
+
+        ws.onmessage = (e) => {
+            const data = reciveData(e);
+            this.cube.position = new Vector3(data.x, data.y, data.z);
+            this.cube.rotation = data.rotation;
+        }
+
         this.engine.runRenderLoop(() => {
 
             const context = {
                 inputs: this.keys,
-                cube: this.cube
+                cube: this.cube,
+                ws: ws
             };
 
             updateWorld(context);
