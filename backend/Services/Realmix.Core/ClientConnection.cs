@@ -1,5 +1,6 @@
 using System.Net.WebSockets;
-using Google.Protobuf;
+using System.Threading.Channels;
+using Realmix.Core.Gaming;
 using Realmix.Protos;
 
 namespace Realmix.Core;
@@ -8,12 +9,16 @@ public class ClientConnection : IDisposable
 {
     private readonly WebSocket _socket;
     private readonly IDisposable _disposable;
-    private readonly List<ClientCommand> _commands;
+    private readonly Channel<GameCommand> _commands;
+    
+    public GameCubeId Id { get; }
 
-    public ClientConnection(WebSocket socket, IDisposable disposable)
+    public ClientConnection(WebSocket socket, Channel<GameCommand> commands, GameCubeId id, IDisposable disposable)
     {
+        Id = id;
+        
         _socket = socket;
-        _commands = new();
+        _commands = commands;
         _disposable = disposable;
     }
 
@@ -28,28 +33,31 @@ public class ClientConnection : IDisposable
             if (result.MessageType == WebSocketMessageType.Close)
                 break;
 
-            var command = ClientCommand.Parser.ParseFrom(buffer, 0, result.Count);
-            _commands.Add(command);
+            var request = ClientCommand.Parser.ParseFrom(buffer, 0, result.Count);
+
+            var control = request.CommandType switch
+            {
+                CommandType.Forward => GameCubeControlState.ToForward(),
+                CommandType.Backward => GameCubeControlState.ToBackward(),
+                CommandType.Left => GameCubeControlState.ToLeft(),
+                CommandType.Right => GameCubeControlState.ToRight(),
+                CommandType.RotateLeft => GameCubeControlState.RotateLeft(),
+                CommandType.RotateRight => GameCubeControlState.RotateRight(),
+                _ => default
+            };
+            
+            await _commands.Writer.WriteAsync(GameCommand.CreateInputCommand(Id, control), ct);
         }
     }
 
-    public async Task SendAsync(CubeData data)
+    public async Task SendAsync(byte[] bytes)
     {
         if (_socket.State != WebSocketState.Open)
             return;
-
-        var bytes = data.ToByteArray();
+        
         await _socket.SendAsync(bytes, WebSocketMessageType.Binary, true, CancellationToken.None);
     }
-
-    public ClientCommand[] PullCommands()
-    {
-        var array = _commands.ToArray();
-        _commands.Clear();
-        
-        return array;
-    }
-
+    
     public void Dispose()
     {
         _disposable.Dispose();

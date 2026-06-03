@@ -3,7 +3,7 @@ import { GameCube, moveSpeed, rotationSpeed } from "./GameCube"
 import { CommandType } from "@realmix/protocol/gen/game";
 import { sendCommand } from "@realmix/protocol";
 
-export const updateWorld = ({ inputs, cube, ws }: IUpdateContext) => {
+export const updateWorld = ({ inputs, ws }: IUpdateContext) => {
 
     var commands: CommandType[] = [];
 
@@ -35,6 +35,5 @@ export const updateWorld = ({ inputs, cube, ws }: IUpdateContext) => {
 
 interface IUpdateContext {
     inputs: Set<string>,
-    cube: GameCube,
     ws: WebSocket
 }

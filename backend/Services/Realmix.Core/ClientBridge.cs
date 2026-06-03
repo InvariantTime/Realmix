@@ -1,64 +1,74 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using System.Threading.Channels;
+using Google.Protobuf;
+using Realmix.Core.Gaming;
 using Realmix.Protos;
 
 namespace Realmix.Core;
 
 public class ClientBridge
 {
-    private int _lastId = 0;
-    private readonly ConcurrentDictionary<int, ClientConnection> _connections = new();
+    private readonly ConcurrentDictionary<GameCubeId, ClientConnection> _connections = new();
+    private readonly Channel<GameCommand> _commands = Channel.CreateUnbounded<GameCommand>();
     
-    public IEnumerable<CommandType> GetCommands()
+    public IEnumerable<GameCommand> PullCommands()
     {
-        var commands = _connections
-            .Values.Select(x => x.PullCommands())
-            .SelectMany(x => x)
-            .Select(x => x.CommandType)
-            .ToArray();
-
-        return commands;
+        while (_commands.Reader.TryRead(out var command) == true)
+            yield return command;
     }
 
-    public async Task SendStateAsync(GameCube cube)
+    public async Task SendStateAsync(GameSnapshot snapshot)
     {
-        var data = new CubeData
+        var cubes = snapshot.Cubes.Select(x => new CubeData
         {
-            X = cube.Position.X,
-            Y = cube.Position.Y,
-            Z = cube.Position.Z,
-            Rotation = cube.Rotation
-        };
+            Id = x.Id.ToString(),
+            Position = new Vector3 { X = x.Position.X, Y = x.Position.Y, Z = x.Position.Z },
+            Rotation = x.Rotation,
+            Color = new Vector3 { X = x.Color.X, Y = x.Color.Y, Z = x.Color.Z }
+        });
+        
+        var data = new WorldSnapshot();
+        data.Players.Add(cubes);
+
+        var bytes = data.ToByteArray();
         
         foreach (var connection in _connections.Values)
-            await connection.SendAsync(data);
+            await connection.SendAsync(bytes);
     }
 
-    public ClientConnection CreateConnection(WebSocket socket)
+    public async Task<ClientConnection> CreateConnectionAsync(WebSocket socket)
     {
-        var disposable = new Disposable(_lastId, _connections);
-        var connection = new ClientConnection(socket, disposable);
+        var id = GameCubeId.Create();
         
-        _connections.TryAdd(_lastId, connection);
-        _lastId++;
+        var disposable = new Disposable(id, this);
+        var connection = new ClientConnection(socket, _commands, id, disposable);
         
+        var result = _connections.TryAdd(id, connection);
+
+        if (result == true)
+            await _commands.Writer.WriteAsync(GameCommand.CreateJoinPlayerCommand(id));
+
         return connection;
     }
     
     private class Disposable : IDisposable
     {
-        private readonly ConcurrentDictionary<int, ClientConnection> _connections;
-        private readonly int _id;
+        private readonly ClientBridge _clientBridge;
+        private readonly GameCubeId _id;
 
-        public Disposable(int id, ConcurrentDictionary<int, ClientConnection> connections)
+        public Disposable(GameCubeId id, ClientBridge bridge)
         {
-            _connections = connections;
+            _clientBridge = bridge;
             _id = id;
         }
         
         public void Dispose()
         {
-            _connections.TryRemove(_id, out _);
+            var result = _clientBridge._connections.TryRemove(_id, out _);
+
+            if (result == true)
+                _clientBridge._commands.Writer.TryWrite(GameCommand.CreateLeavePlayerCommand(_id));
         }
     }
 }

@@ -76,11 +76,21 @@ export interface ClientCommand {
   commandType: CommandType;
 }
 
+export interface WorldSnapshot {
+  players: CubeData[];
+}
+
 export interface CubeData {
+  id: string;
+  color: Vector3 | undefined;
+  position: Vector3 | undefined;
+  rotation: number;
+}
+
+export interface Vector3 {
   x: number;
   y: number;
   z: number;
-  rotation: number;
 }
 
 function createBaseClientCommand(): ClientCommand {
@@ -141,20 +151,80 @@ export const ClientCommand: MessageFns<ClientCommand> = {
   },
 };
 
+function createBaseWorldSnapshot(): WorldSnapshot {
+  return { players: [] };
+}
+
+export const WorldSnapshot: MessageFns<WorldSnapshot> = {
+  encode(message: WorldSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.players) {
+      CubeData.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WorldSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWorldSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.players.push(CubeData.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WorldSnapshot {
+    return {
+      players: globalThis.Array.isArray(object?.players) ? object.players.map((e: any) => CubeData.fromJSON(e)) : [],
+    };
+  },
+
+  toJSON(message: WorldSnapshot): unknown {
+    const obj: any = {};
+    if (message.players?.length) {
+      obj.players = message.players.map((e) => CubeData.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<WorldSnapshot>, I>>(base?: I): WorldSnapshot {
+    return WorldSnapshot.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<WorldSnapshot>, I>>(object: I): WorldSnapshot {
+    const message = createBaseWorldSnapshot();
+    message.players = object.players?.map((e) => CubeData.fromPartial(e)) || [];
+    return message;
+  },
+};
+
 function createBaseCubeData(): CubeData {
-  return { x: 0, y: 0, z: 0, rotation: 0 };
+  return { id: "", color: undefined, position: undefined, rotation: 0 };
 }
 
 export const CubeData: MessageFns<CubeData> = {
   encode(message: CubeData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.x !== 0) {
-      writer.uint32(13).float(message.x);
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
     }
-    if (message.y !== 0) {
-      writer.uint32(21).float(message.y);
+    if (message.color !== undefined) {
+      Vector3.encode(message.color, writer.uint32(18).fork()).join();
     }
-    if (message.z !== 0) {
-      writer.uint32(29).float(message.z);
+    if (message.position !== undefined) {
+      Vector3.encode(message.position, writer.uint32(26).fork()).join();
     }
     if (message.rotation !== 0) {
       writer.uint32(37).float(message.rotation);
@@ -166,6 +236,115 @@ export const CubeData: MessageFns<CubeData> = {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseCubeData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.id = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.color = Vector3.decode(reader, reader.uint32());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.position = Vector3.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 37) {
+            break;
+          }
+
+          message.rotation = reader.float();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CubeData {
+    return {
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      color: isSet(object.color) ? Vector3.fromJSON(object.color) : undefined,
+      position: isSet(object.position) ? Vector3.fromJSON(object.position) : undefined,
+      rotation: isSet(object.rotation) ? globalThis.Number(object.rotation) : 0,
+    };
+  },
+
+  toJSON(message: CubeData): unknown {
+    const obj: any = {};
+    if (message.id !== "") {
+      obj.id = message.id;
+    }
+    if (message.color !== undefined) {
+      obj.color = Vector3.toJSON(message.color);
+    }
+    if (message.position !== undefined) {
+      obj.position = Vector3.toJSON(message.position);
+    }
+    if (message.rotation !== 0) {
+      obj.rotation = message.rotation;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CubeData>, I>>(base?: I): CubeData {
+    return CubeData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CubeData>, I>>(object: I): CubeData {
+    const message = createBaseCubeData();
+    message.id = object.id ?? "";
+    message.color = (object.color !== undefined && object.color !== null)
+      ? Vector3.fromPartial(object.color)
+      : undefined;
+    message.position = (object.position !== undefined && object.position !== null)
+      ? Vector3.fromPartial(object.position)
+      : undefined;
+    message.rotation = object.rotation ?? 0;
+    return message;
+  },
+};
+
+function createBaseVector3(): Vector3 {
+  return { x: 0, y: 0, z: 0 };
+}
+
+export const Vector3: MessageFns<Vector3> = {
+  encode(message: Vector3, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.x !== 0) {
+      writer.uint32(13).float(message.x);
+    }
+    if (message.y !== 0) {
+      writer.uint32(21).float(message.y);
+    }
+    if (message.z !== 0) {
+      writer.uint32(29).float(message.z);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Vector3 {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVector3();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -193,14 +372,6 @@ export const CubeData: MessageFns<CubeData> = {
           message.z = reader.float();
           continue;
         }
-        case 4: {
-          if (tag !== 37) {
-            break;
-          }
-
-          message.rotation = reader.float();
-          continue;
-        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -210,16 +381,15 @@ export const CubeData: MessageFns<CubeData> = {
     return message;
   },
 
-  fromJSON(object: any): CubeData {
+  fromJSON(object: any): Vector3 {
     return {
       x: isSet(object.x) ? globalThis.Number(object.x) : 0,
       y: isSet(object.y) ? globalThis.Number(object.y) : 0,
       z: isSet(object.z) ? globalThis.Number(object.z) : 0,
-      rotation: isSet(object.rotation) ? globalThis.Number(object.rotation) : 0,
     };
   },
 
-  toJSON(message: CubeData): unknown {
+  toJSON(message: Vector3): unknown {
     const obj: any = {};
     if (message.x !== 0) {
       obj.x = message.x;
@@ -230,21 +400,17 @@ export const CubeData: MessageFns<CubeData> = {
     if (message.z !== 0) {
       obj.z = message.z;
     }
-    if (message.rotation !== 0) {
-      obj.rotation = message.rotation;
-    }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<CubeData>, I>>(base?: I): CubeData {
-    return CubeData.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<Vector3>, I>>(base?: I): Vector3 {
+    return Vector3.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<CubeData>, I>>(object: I): CubeData {
-    const message = createBaseCubeData();
+  fromPartial<I extends Exact<DeepPartial<Vector3>, I>>(object: I): Vector3 {
+    const message = createBaseVector3();
     message.x = object.x ?? 0;
     message.y = object.y ?? 0;
     message.z = object.z ?? 0;
-    message.rotation = object.rotation ?? 0;
     return message;
   },
 };

@@ -1,4 +1,5 @@
 using Realmix.Core;
+using Realmix.Core.Gaming;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,8 @@ builder.Services.AddCors(op =>
     });
 });
 
-builder.Services.AddHostedService<Game>();
+builder.Services.AddHostedService<GameLoop>();
+builder.Services.AddSingleton<Game>();
 builder.Services.AddSingleton<ClientBridge>();
 
 var app = builder.Build();
@@ -34,7 +36,7 @@ app.Map("/ws", async (
     }
 
     var socket = await context.WebSockets.AcceptWebSocketAsync();
-    var connection = bridge.CreateConnection(socket);
+    var connection = await bridge.CreateConnectionAsync(socket);
     
     await connection.RunAsync(ct);
     connection.Dispose();

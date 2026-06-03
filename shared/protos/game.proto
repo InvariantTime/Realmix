@@ -8,11 +8,21 @@ message ClientCommand {
     CommandType commandType = 1;
 }
 
+message WorldSnapshot {
+    repeated CubeData players = 1;
+}
+
 message CubeData {
+    string id = 1;
+    Vector3 color = 2;
+    Vector3 position = 3;
+    float rotation = 4;
+}
+
+message Vector3 {
     float x = 1;
     float y = 2;
     float z = 3;
-    float rotation = 4;
 }
 
 enum CommandType {

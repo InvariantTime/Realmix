@@ -1,16 +1,35 @@
-import { Quaternion, Vector3 } from "@babylonjs/core";
+import { Color3, Mesh, Quaternion, StandardMaterial, Vector3 } from "@babylonjs/core";
 
 export const moveSpeed: number = 0.06;
 export const rotationSpeed = 0.04;
 
 export class GameCube {
-    public position: Vector3 = Vector3.Zero();
-    public rotation: number = 0;
+    private readonly mesh: Mesh;
+    private readonly material: StandardMaterial;
 
-    public getDirection(vector: Vector3): Vector3 {
+    public readonly id: string;
 
-        const quaternion = Quaternion.RotationAxis(new Vector3(0, 1, 0), this.rotation);
-        return vector.applyRotationQuaternion(quaternion);
+    constructor(mesh: Mesh, material: StandardMaterial, id: string) {
+        this.mesh = mesh;
+        this.material = material;
+        this.id = id;
+    }
+
+    public setPosition(vector: Vector3) {
+        this.mesh.position = vector;
+    }
+
+    public setRotation(rotation: number) {
+        this.mesh.rotation.y = rotation;
+    }
+
+    public setColor(color: Color3) {
+        this.material.diffuseColor = color;
+    }
+
+    public dispose() {
+        this.mesh.dispose();
+        this.material.dispose();
     }
 }
 

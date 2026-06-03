@@ -1,4 +1,4 @@
-import {CommandType, ClientCommand, CubeData } from "./gen/game"
+import {CommandType, ClientCommand, CubeData, WorldSnapshot } from "./gen/game"
 
 export async function sendCommand(ws: WebSocket, command: CommandType) {
     
@@ -6,8 +6,8 @@ export async function sendCommand(ws: WebSocket, command: CommandType) {
     await ws.send(data);
 }
 
-export function reciveData(e: MessageEvent) {
-    const response = CubeData.decode(new Uint8Array(e.data));
+export function getSnapshot(e: MessageEvent) {
+    const response = WorldSnapshot.decode(new Uint8Array(e.data));
     return response;
 }
 
