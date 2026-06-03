@@ -1,6 +1,7 @@
-rm -rf ../../backend/Services/Realmix.Core/generated
-mkdir ../../backend/Services/Realmix.Core/generated
+path=../../backend/Shared/Infrastructure/Realmix.Protos/Generated
+rm -rf $path
+mkdir $path
 protoc \
                                                    --proto_path=./ \
-                                                   --csharp_out=../../backend/Services/Realmix.Core/generated \
+                                                   --csharp_out=$path \
                                                    ./*.proto

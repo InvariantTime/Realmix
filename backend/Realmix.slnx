@@ -1,3 +1,11 @@
 <Solution>
-  <Project Path="Services/Realmix.Core/Realmix.Core.csproj" />
+  <Folder Name="/Services/" />
+  <Folder Name="/Services/CoreServer/">
+    <Project Path="Services/Realmix.Core/Realmix.Core.csproj" />
+  </Folder>
+  <Folder Name="/Shared/" />
+  <Folder Name="/Shared/Infrastructure/">
+    <Project Path="Shared/Infrastructure/Realmix.Protocol/Realmix.Protocol.csproj" />
+    <Project Path="Shared/Infrastructure/Realmix.Protos/Realmix.Protos.csproj" />
+  </Folder>
 </Solution>
