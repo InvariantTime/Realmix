@@ -5,12 +5,12 @@ namespace Realmix.Core;
 public class GameLoop : BackgroundService
 {
     private readonly Game _game;
-    private readonly ClientBridge _bridge;
+    private readonly GameProtocolHandler _handler;
 
-    public GameLoop(Game game, ClientBridge bridge)
+    public GameLoop(Game game, GameProtocolHandler handler)
     {
         _game = game;
-        _bridge = bridge;
+        _handler = handler;
     }
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -18,11 +18,11 @@ public class GameLoop : BackgroundService
         while (stoppingToken.IsCancellationRequested == false)
         {
             await Task.Delay(50, stoppingToken);
-            var commands = _bridge.PullCommands().ToArray();
+            var commands = _handler.PullCommands();
             _game.HandleCommands(commands);
             var snapshot = _game.Update();
-            
-            await _bridge.SendStateAsync(snapshot);
+
+            await _handler.SendSnapshotAsync(snapshot);
         }
     }
 }

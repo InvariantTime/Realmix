@@ -1,18 +1,50 @@
+using System.Buffers;
 using System.Net.WebSockets;
 
 namespace Realmix.Protocol;
 
-public class SocketConnection
+public class SocketConnection : IAsyncDisposable
 {
     private readonly WebSocket _socket;
-    private readonly CancellationToken _ct;
-    private readonly string _id;
+    
+    public string Id { get; }
 
-    public SocketConnection(WebSocket socket, string id, CancellationToken ct)
+    public SocketConnection(WebSocket socket, string id)
     {
         _socket = socket;
-        _id = id;
-        _ct = ct;
+        Id = id;
+    }
+
+    public async Task RunAsync(IProtocolHandler handler)//TODO: not thread safe
+    {
+        var buffer = ArrayPool<byte>.Shared.Rent(4096);
+
+        await handler.OnConnectedAsync(this);
+
+        try
+        {
+            using var stream = new MemoryStream();
+            
+            while (_socket.State == WebSocketState.Open)
+            {
+                WebSocketReceiveResult? result;
+
+                do
+                {
+                    result = await _socket.ReceiveAsync(buffer, CancellationToken.None);
+                    stream.Write(buffer, 0, result.Count);
+                } 
+                while (result?.EndOfMessage == false);
+
+                await handler.OnMessageAsync(stream.ToArray(), this);
+                stream.Seek(0, SeekOrigin.Begin);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+            await handler.OnDisconnectedAsync(this);
+        }
     }
 
     public Task SendAsync(byte[] data)//TODO: buffers and options
@@ -20,23 +52,9 @@ public class SocketConnection
         return _socket.SendAsync(data, WebSocketMessageType.Binary, true, CancellationToken.None);//TODO: it's not thread-safe code
     }
 
-    public async Task<byte[]> ReceiveAsync() //TODO: options
+    public ValueTask DisposeAsync()
     {
-        var buffer = new ArraySegment<byte>(new byte[1024]);
-        await _socket.ReceiveAsync(buffer, _ct);
-
-        return buffer.ToArray();
-    }
-
-    public async Task CloseAsync()
-    {
-        try
-        {
-            await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-        }
-        finally
-        {
-            
-        }
+        _socket.Dispose();
+        return ValueTask.CompletedTask;
     }
 }

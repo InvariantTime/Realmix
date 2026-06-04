@@ -6,6 +6,6 @@ public static class ServicesExtensions
 {
     public static void AddProtocol(this IServiceCollection services)
     {
-        services.AddSingleton<ConnectionRegistry>();
+        services.AddScoped<WebSocketMiddleware>();
     }
 }

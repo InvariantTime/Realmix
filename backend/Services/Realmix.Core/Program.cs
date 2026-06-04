@@ -1,5 +1,6 @@
 using Realmix.Core;
 using Realmix.Core.Gaming;
+using Realmix.Protocol;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,12 @@ builder.Services.AddCors(op =>
 
 builder.Services.AddHostedService<GameLoop>();
 builder.Services.AddSingleton<Game>();
-builder.Services.AddSingleton<ClientBridge>();
+builder.Services.AddSingleton<GameProtocolHandler>();
+builder.Services.AddScoped<WebSocketMiddleware>(scope =>
+{
+    var handler = scope.GetRequiredService<GameProtocolHandler>();
+    return new WebSocketMiddleware(handler);
+});
 
 var app = builder.Build();
 
@@ -24,22 +30,9 @@ app.UseCors("frontend");
 
 app.UseWebSockets();
 
-app.Map("/ws", async (
-    HttpContext context,
-    ClientBridge bridge,
-    CancellationToken ct) =>
+app.Map("/ws", (HttpContext context, WebSocketMiddleware middleware) =>
 {
-    if (context.WebSockets.IsWebSocketRequest == false)
-    {
-        context.Response.StatusCode = 400;
-        return;
-    }
-
-    var socket = await context.WebSockets.AcceptWebSocketAsync();
-    var connection = await bridge.CreateConnectionAsync(socket);
-    
-    await connection.RunAsync(ct);
-    connection.Dispose();
+    return middleware.InvokeAsync(context, _ => Task.CompletedTask);
 });
 
 app.Run();

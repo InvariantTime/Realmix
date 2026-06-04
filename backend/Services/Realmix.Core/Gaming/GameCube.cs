@@ -4,8 +4,8 @@ namespace Realmix.Core.Gaming;
 
 public class GameCube
 {
-    private const float MoveSpeed = 0.06f;
-    private const float RotationSpeed = 0.03f;
+    private const float MoveSpeed = 0.08f;
+    private const float RotationSpeed = 0.05f;
     
     public GameCubeId Id { get; }
     
@@ -88,7 +88,7 @@ public readonly struct GameCubeControlState
     
     public static GameCubeControlState ToLeft() => new(Directions.None, Directions.Forward, Directions.None);
     
-    public static GameCubeControlState ToRight() => new(Directions.Forward, Directions.Backward, Directions.None);
+    public static GameCubeControlState ToRight() => new(Directions.None, Directions.Backward, Directions.None);
     
     public static GameCubeControlState RotateLeft() => new(Directions.None, Directions.None, Directions.Forward);
     
