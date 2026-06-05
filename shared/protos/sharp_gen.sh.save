@@ -1,0 +1,53 @@
+path=[realmix] 1:frontend  2:backend  3:root* 4:shared-                                                                                                                "~/p/Realmix" 17:40 03-июн-26
+│   ├── apps
+│   │   └── game
+│   │       ├── eslint.config.js
+│   │       ├── index.html
+│   │       ├── node_modules
+│   │       ├── package.json
+│   │       ├── public
+│   │       ├── README.md
+│   │       ├── src
+│   │       ├── tsconfig.app.json
+│   │       ├── tsconfig.json
+│   │       ├── tsconfig.node.json
+│   │       └── vite.config.ts
+│   ├── node_modules
+│   │   ├── @bufbuild
+│   │   │   ├── protobuf -> ../.pnpm/@bufbuild+protobuf@2.12.0/node_modules/@bufbuild/protobuf
+│   │   │   └── protoc-gen-es -> ../.pnpm/@bufbuild+protoc-gen-es@2.12.0_@bufbuild+protobuf@2.12.0/node_modules/@bufbuild/protoc-gen-es
+│   │   ├── @protobuf-ts
+│   │   │   ├── plugin -> ../.pnpm/@protobuf-ts+plugin@2.11.1/node_modules/@protobuf-ts/plugin
+│   │   │   └── runtime -> ../.pnpm/@protobuf-ts+runtime@2.11.1/node_modules/@protobuf-ts/runtime
+│   │   ├── @tailwindcss
+│   │   │   └── vite -> ../.pnpm/@tailwindcss+vite@4.3.0_vite@8.0.14_@types+node@24.12.4_jiti@2.7.0_/node_modules/@tailwindcss/vite
+│   │   ├── tailwindcss -> .pnpm/tailwindcss@4.3.0/node_modules/tailwindcss
+│   │   └── ts-proto -> .pnpm/ts-proto@2.11.8/node_modules/ts-proto
+│   ├── package.json
+│   ├── packages
+│   │   ├── engine
+│   │   │   ├── node_modules
+│   │   │   ├── package.json
+│   │   │   ├── src
+│   │   │   └── tsconfig.json
+│   │   └── protocol
+│   │       ├── gen
+│   │       ├── index.ts
+│   │       └── package.json
+│   ├── pnpm-lock.yaml
+│   ├── pnpm-workspace.yaml
+│   └── tsconfig.base.json
+└── shared
+    └── protos
+        ├── game.proto
+        ├── sharp_gen.sh
+        └── ts_gen.sh
+
+41 directories, 33 files
+inv@inv-desktop-256 ~/p/Realmix (master)>
+rm -rf $path
+mkdir ../../backend/Shared/Infrastructure/Realmix.Protos/Generated
+protoc \
+                                                   --proto_path=./ \
+                                                   --csharp_out=../../backend/Services/Realmix.Core/generated \
+                                                   ./*.proto

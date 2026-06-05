@@ -34,12 +34,14 @@ public class SocketConnection : IAsyncDisposable
                     result = await _socket.ReceiveAsync(buffer, CancellationToken.None);
                     stream.Write(buffer, 0, result.Count);
                 } 
-                while (result?.EndOfMessage == false);
+                while (result.EndOfMessage == false);
 
                 await handler.OnMessageAsync(stream.ToArray(), this);
                 stream.Seek(0, SeekOrigin.Begin);
             }
         }
+        catch (OperationCanceledException) {}
+        catch (WebSocketException) {}
         finally
         {
             ArrayPool<byte>.Shared.Return(buffer);
@@ -49,6 +51,9 @@ public class SocketConnection : IAsyncDisposable
 
     public Task SendAsync(byte[] data)//TODO: buffers and options
     {
+        if (_socket.State != WebSocketState.Open)
+            return Task.CompletedTask;
+        
         return _socket.SendAsync(data, WebSocketMessageType.Binary, true, CancellationToken.None);//TODO: it's not thread-safe code
     }
 

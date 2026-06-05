@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Game/">
+    <Project Path="Game/Realmix.Game.Core/Realmix.Game.Core.csproj" />
+  </Folder>
   <Folder Name="/Services/" />
   <Folder Name="/Services/CoreServer/">
     <Project Path="Services/Realmix.Core/Realmix.Core.csproj" />
