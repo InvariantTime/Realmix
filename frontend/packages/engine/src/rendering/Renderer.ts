@@ -1,6 +1,7 @@
-import { ArcRotateCamera, Color3, Engine, HemisphericLight, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
+import { ArcRotateCamera, Color3, DirectionalLight, Engine, HemisphericLight, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
 import { GameWorld } from "../world/GameWorld";
 import { MeshCube } from "./MeshCube";
+import { SkyMaterial } from "@babylonjs/materials";
 
 
 export class Renderer {//TODO: render world
@@ -41,7 +42,7 @@ export class Renderer {//TODO: render world
                 exist[1].mesh.dispose();
                 this.cubes.delete(exist[0]);
             }
-                
+
         }
     }
 
@@ -72,13 +73,16 @@ export class Renderer {//TODO: render world
             scene
         );
 
-        const light = new HemisphericLight(
-            "light",
-            new Vector3(0, 1, 0),
+        const light = new DirectionalLight(
+            'light',
+            new Vector3(-1, -2, 1),
             scene
-        );
+        )
+        light.intensity = 1
+        const lightDistance = 20
+        light.position = new Vector3(lightDistance, 2 * lightDistance, lightDistance)
 
-        light.intensity = 0.4;
+        light.intensity = 0.8;
 
         window.addEventListener("resize", () => {
             engine.resize();
@@ -86,41 +90,53 @@ export class Renderer {//TODO: render world
 
         camera.attachControl(canvas, true);
 
-        
+        const skybox = MeshBuilder.CreateBox("skybox", {
+            size: 1000
+        }, scene);
+
+        const skyMaterial = new SkyMaterial("sky_material", scene);
+        skyMaterial.backFaceCulling = false;
+
+        skyMaterial.luminance = 0.5;
+        skyMaterial.inclination = 0.18;
+        skyMaterial.azimuth = 0.27;
+
+        skybox.material = skyMaterial;
+
 
         return new Renderer(engine, scene);
     }
 
     private createCube(id: String) {
-    
-            const material = new StandardMaterial(`${id}_material`, this.scene);
-    
-            const mesh = MeshBuilder.CreateBox(
-                id.toString(),
-                {
-                    size: 1
-                },
-                this.scene
-            );
-            mesh.material = material;
-            
-            const arrow = MeshBuilder.CreateCylinder(`${id}_arrow`, {
-                height: 0.8,
-                diameter: 0.03
+
+        const material = new StandardMaterial(`${id}_material`, this.scene);
+
+        const mesh = MeshBuilder.CreateBox(
+            id.toString(),
+            {
+                size: 1
             },
+            this.scene
+        );
+        mesh.material = material;
+
+        const arrow = MeshBuilder.CreateCylinder(`${id}_arrow`, {
+            height: 0.8,
+            diameter: 0.03
+        },
             this.scene);
-            arrow.parent = mesh;
-    
-            arrow.position.z = 0.8;
-            arrow.rotation.x = Math.PI / 2;
-    
-            const arrowMaterial = new StandardMaterial(`${id}_arrow_material`, this.scene);
-            arrowMaterial.emissiveColor = new Color3(0.2, 1, 0.2);
-            arrow.material = arrowMaterial;
-    
-            const cube = {mesh: mesh, material: material};
-            this.cubes.set(id, cube);
-    
-            return cube;
-        }
+        arrow.parent = mesh;
+
+        arrow.position.z = 0.8;
+        arrow.rotation.x = Math.PI / 2;
+
+        const arrowMaterial = new StandardMaterial(`${id}_arrow_material`, this.scene);
+        arrowMaterial.emissiveColor = new Color3(0.2, 1, 0.2);
+        arrow.material = arrowMaterial;
+
+        const cube = { mesh: mesh, material: material };
+        this.cubes.set(id, cube);
+
+        return cube;
+    }
 }

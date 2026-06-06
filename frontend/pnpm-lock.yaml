@@ -299,6 +299,9 @@ importers:
       '@babylonjs/core':
         specifier: ^9.10.1
         version: 9.10.1
+      '@babylonjs/materials':
+        specifier: ^9.11.0
+        version: 9.11.0(@babylonjs/core@9.10.1)
       '@realmix/protocol':
         specifier: 'workspace:'
         version: link:../protocol
@@ -376,6 +379,11 @@ packages:
 
   '@babylonjs/core@9.10.1':
     resolution: {integrity: sha512-w7jhzzAHEh9hrCXtsQeUh7i8RL6x3PE+ExhBqVTn49GRfUdnzwhh3SPQgf0TKwGqelvBTA112TuIl6cENfzE2A==}
+
+  '@babylonjs/materials@9.11.0':
+    resolution: {integrity: sha512-0g8+oiqFpWJU+BW4z15qpohvYruACRtfHCrec1OnqhR09uOI9QEwkdbR2ep91/7j9Qt15/WxU2tqECrsXzKAkw==}
+    peerDependencies:
+      '@babylonjs/core': ^9.0.0
 
   '@bufbuild/protobuf@2.12.0':
     resolution: {integrity: sha512-B/XlCaFIP8LOwzo+bz5uFzATYokcwCKQcghqnlfwSmM5eX/qTkvDBnDPs+gXtX/RyjxJ4DRikECcPJbyALA8FA==}
@@ -1498,6 +1506,10 @@ snapshots:
       '@babel/helper-validator-identifier': 7.29.7
 
   '@babylonjs/core@9.10.1': {}
+
+  '@babylonjs/materials@9.11.0(@babylonjs/core@9.10.1)':
+    dependencies:
+      '@babylonjs/core': 9.10.1
 
   '@bufbuild/protobuf@2.12.0': {}
 
