@@ -4,7 +4,7 @@ import { MeshCube } from "./MeshCube";
 
 
 export class Renderer {//TODO: render world
-    private readonly cubes = Map<string, MeshCube>;
+    private readonly cubes: Map<String, MeshCube> = new Map<String, MeshCube>;
     private readonly engine: Engine;
     private readonly scene: Scene;
 
@@ -15,6 +15,34 @@ export class Renderer {//TODO: render world
 
     public update(world: GameWorld) {
 
+        const entities = world.getEntities();
+        const contain = new Set<String>();
+
+        for (var entity of entities) {
+            contain.add(entity.id);
+            var cube = this.cubes.get(entity.id);
+
+            if (cube === undefined) {
+
+                cube = this.createCube(entity.id);
+            }
+
+            cube.mesh.position.x = entity.position.x;
+            cube.mesh.position.y = entity.position.y;
+            cube.mesh.position.z = entity.position.z;
+
+
+            cube.mesh.rotation.y = entity.rotation;
+        }
+
+        for (var exist of this.cubes) {
+            if (contain.has(exist[0]) === false) {
+                exist[1].material.dispose();
+                exist[1].mesh.dispose();
+                this.cubes.delete(exist[0]);
+            }
+                
+        }
     }
 
     public render() {
@@ -58,6 +86,41 @@ export class Renderer {//TODO: render world
 
         camera.attachControl(canvas, true);
 
+        
+
         return new Renderer(engine, scene);
     }
+
+    private createCube(id: String) {
+    
+            const material = new StandardMaterial(`${id}_material`, this.scene);
+    
+            const mesh = MeshBuilder.CreateBox(
+                id.toString(),
+                {
+                    size: 1
+                },
+                this.scene
+            );
+            mesh.material = material;
+            
+            const arrow = MeshBuilder.CreateCylinder(`${id}_arrow`, {
+                height: 0.8,
+                diameter: 0.03
+            },
+            this.scene);
+            arrow.parent = mesh;
+    
+            arrow.position.z = 0.8;
+            arrow.rotation.x = Math.PI / 2;
+    
+            const arrowMaterial = new StandardMaterial(`${id}_arrow_material`, this.scene);
+            arrowMaterial.emissiveColor = new Color3(0.2, 1, 0.2);
+            arrow.material = arrowMaterial;
+    
+            const cube = {mesh: mesh, material: material};
+            this.cubes.set(id, cube);
+    
+            return cube;
+        }
 }

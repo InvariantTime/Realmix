@@ -18,6 +18,7 @@ export class GameApplication {
 
         const update = (dt: number) => {
 
+            renderer.update(this.world);
             renderer.render();
         }
 

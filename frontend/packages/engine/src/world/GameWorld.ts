@@ -1,7 +1,7 @@
 import { GameEntity } from "./GameEntity";
 
 export class GameWorld {
-    private readonly entities = new Map<string, GameEntity>();
+    private readonly entities = new Map<String, GameEntity>();
 
     public constructor() {
 
@@ -11,11 +11,11 @@ export class GameWorld {
         this.entities.set(entity.id, entity);
     }
 
-    public removeEntity(id: string) {
+    public removeEntity(id: String) {
         return this.entities.delete(id);
     }
 
-    public hasEntity(id: string) {
+    public hasEntity(id: String) {
         return this.entities.has(id);
     }
 
