@@ -1,23 +1,24 @@
 import { useCallback, useEffect, useRef } from "react";
 import { GameCanvas } from "./components/GameCanvas";
-import { createEngine, EngineApplication } from "@realmix/engine";
+import { BrowserGameLoop, GameApplication, GameWorld } from "@realmix/engine";
 
 function App() {
 
-  const engineRef = useRef<EngineApplication>(null);
+  const appRef = useRef<GameApplication>(null);
 
   const onCanvasInit = useCallback((canvas: HTMLCanvasElement) => {
 
-    const engine = createEngine({canvas});
-    engine.start();
+    const loop = new BrowserGameLoop();
+    const app = new GameApplication(loop, new GameWorld());
 
-    engineRef.current = engine;
+    app.start(canvas);
+    appRef.current = app;
 
-  }, [engineRef]);
+  }, [appRef]);
 
   useEffect(() => {
 
-    return () => engineRef.current?.dispose();
+    return () => appRef.current?.dispose();
   }, []);
 
 
