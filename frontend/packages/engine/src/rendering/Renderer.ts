@@ -1,22 +1,23 @@
-import { ArcRotateCamera, Color3, DirectionalLight, Engine, HemisphericLight, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
-import { GameWorld } from "../world/GameWorld";
+import { ArcRotateCamera, Color3, DirectionalLight, Engine, MeshBuilder, 
+    Scene as RenderScene, StandardMaterial, Vector3 } from "@babylonjs/core";
 import { MeshCube } from "./MeshCube";
 import { SkyMaterial } from "@babylonjs/materials";
+import { Scene } from "../sceneGraph";
 
 
 export class Renderer {//TODO: render world
     private readonly cubes: Map<String, MeshCube> = new Map<String, MeshCube>;
     private readonly engine: Engine;
-    private readonly scene: Scene;
+    private readonly scene: RenderScene;
 
-    private constructor(engine: Engine, scene: Scene) {
+    private constructor(engine: Engine, scene: RenderScene) {
         this.engine = engine;
         this.scene = scene;
     }
 
-    public update(world: GameWorld) {
+    public update(scene: Scene) {
 
-        const entities = world.getEntities();
+        const entities = scene.entities;
         const contain = new Set<String>();
 
         for (var entity of entities) {
@@ -53,7 +54,7 @@ export class Renderer {//TODO: render world
 
     public static build(canvas: HTMLCanvasElement) {
         const engine = new Engine(canvas);
-        const scene = new Scene(engine);
+        const scene = new RenderScene(engine);
 
         const ground = MeshBuilder.CreateGround("ground", {
             width: 20,

@@ -1,15 +1,15 @@
 import { Renderer } from "../rendering/Renderer";
-import { GameWorld } from "../world/GameWorld";
+import { Scene } from "../sceneGraph";
 import { IGameLoop } from "./IGameLoop";
 
 
 export class GameApplication {
     private readonly loop: IGameLoop;
-    private readonly world: GameWorld;
+    private readonly scene: Scene;
 
-    constructor(loop: IGameLoop, world: GameWorld) {
+    constructor(loop: IGameLoop, scene: Scene) {
         this.loop = loop;
-        this.world = world;
+        this.scene = scene;
     }
 
     public start(canvas: HTMLCanvasElement) {//TODO: remove canvas from start method arg
@@ -18,7 +18,7 @@ export class GameApplication {
 
         const update = (dt: number) => {
 
-            renderer.update(this.world);
+            renderer.update(this.scene);
             renderer.render();
         }
 
