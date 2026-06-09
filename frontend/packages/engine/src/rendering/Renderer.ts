@@ -29,12 +29,13 @@ export class Renderer {//TODO: render world
                 cube = this.createCube(entity.id);
             }
 
-            cube.mesh.position.x = entity.position.x;
-            cube.mesh.position.y = entity.position.y;
-            cube.mesh.position.z = entity.position.z;
+            const transform = entity.transform;
 
+            cube.mesh.position.x = transform.position.x;
+            cube.mesh.position.y = transform.position.y;
+            cube.mesh.position.z = transform.position.z;
 
-            cube.mesh.rotation.y = entity.rotation;
+            cube.mesh.rotation.y = transform.rotationY;
         }
 
         for (var exist of this.cubes) {

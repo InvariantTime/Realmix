@@ -1,35 +1,40 @@
-import { Vector3 } from "../math";
 import { EntityComponent } from "./EntityComponent";
+import { EntityComponentBase } from "./EntityComponentBase";
+import { EntityTransform } from "./EntityTransform";
 
 export class Entity {
-    private components: EntityComponent[] = [];
+    private _components: EntityComponentBase[] = [];
+    private _transform?: EntityTransform;
 
     public readonly id: string;
 
-    public position: Vector3;
+    public get transform(): EntityTransform {
+        return this._transform ??= this.getComponent(EntityTransform)!;
+    }
 
-    public rotation: number;
-
-    public constructor(id: string, position: Vector3 = Vector3.Zero, rotation: number = 0) {
+    public constructor(id: string) {
         this.id = id;
-        this.position = position;
-        this.rotation = rotation;
+        this.addComponent(new EntityTransform());
     }
 
-    public addComponent(component: EntityComponent) {
-        this.components = [...this.components, component];
+    public addComponent(component: EntityComponentBase) {
+        this._components = [...this._components, component];
     }
 
-    public removeComponent(component: EntityComponent) {
-        this.components = this.components.filter(x => x !== component);
+    public removeComponent(component: EntityComponentBase) {
+        this._components = this._components.filter(x => x !== component);
     }
 
-    public getAllComponents() : Iterable<EntityComponent> {
-        return this.components;
+    public getAllComponents(predicate?: (c: EntityComponentBase) => boolean) : Iterable<EntityComponentBase> {
+
+        if (predicate === undefined)
+            return this._components;
+
+        return this._components.filter(predicate);
     }
 
-    public getComponent<T extends EntityComponent>(componentClass: new (...args: any[]) => T): T | null {
-    const found = this.components.find(c => c instanceof componentClass);
-    return (found as T) || null;
+    public getComponent<T extends EntityComponentBase>(componentClass: new (...args: any[]) => T): T | undefined {
+    const found = this._components.find(c => c instanceof componentClass);
+    return (found as T) || undefined;
   }
 }

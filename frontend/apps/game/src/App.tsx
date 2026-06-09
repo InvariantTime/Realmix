@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { GameCanvas } from "./components/GameCanvas";
-import { BrowserGameLoop, Entity, GameApplication, Scene } from "@realmix/engine";
+import { BrowserGameLoop, Entity, GameApplication, Scene, Vector3 } from "@realmix/engine";
 
 function App() {
 
@@ -9,7 +9,12 @@ function App() {
   const onCanvasInit = useCallback((canvas: HTMLCanvasElement) => {
 
     const scene = new Scene();
-    scene.addEntity(new Entity("abc", {x: 0, y: 0.5, z: 10}, 1));
+
+    const entity = new Entity("abc");
+    entity.transform.position = new Vector3(1, 0.5, 10);
+    entity.transform.rotationY = 1;
+
+    scene.addEntity(entity);
 
     const loop = new BrowserGameLoop();
     const app = new GameApplication(loop, scene);
