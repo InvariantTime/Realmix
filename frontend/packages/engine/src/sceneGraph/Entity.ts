@@ -1,9 +1,10 @@
-import { EntityComponent } from "./EntityComponent";
 import { EntityComponentBase } from "./EntityComponentBase";
 import { EntityTransform } from "./EntityTransform";
+import { SceneGraphPipeline } from "./SceneGraphPipeline";
 
 export class Entity {
     private _components: EntityComponentBase[] = [];
+    private _pipeline?: SceneGraphPipeline;
     private _transform?: EntityTransform;
 
     public readonly id: string;
@@ -25,7 +26,7 @@ export class Entity {
         this._components = this._components.filter(x => x !== component);
     }
 
-    public getAllComponents(predicate?: (c: EntityComponentBase) => boolean) : Iterable<EntityComponentBase> {
+    public getAllComponents(predicate?: (c: EntityComponentBase) => boolean): Iterable<EntityComponentBase> {
 
         if (predicate === undefined)
             return this._components;
@@ -34,7 +35,15 @@ export class Entity {
     }
 
     public getComponent<T extends EntityComponentBase>(componentClass: new (...args: any[]) => T): T | undefined {
-    const found = this._components.find(c => c instanceof componentClass);
-    return (found as T) || undefined;
-  }
+        const found = this._components.find(c => c instanceof componentClass);
+        return (found as T) || undefined;
+    }
+
+    public setPipeline(pipeline: SceneGraphPipeline) {
+        this._pipeline = pipeline;
+    }
+
+    public getPipeline() {
+        return this._pipeline;
+    }
 }
